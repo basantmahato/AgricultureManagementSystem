@@ -1,81 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import AOS from "aos";
 
-const Blog = () => {
+const Blog = ({ id }) => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Replace 'YOUR_API_KEY' and the URL with your chosen provider (e.g., NewsData.io)
-  const API_KEY = 'pub_d4a030811307474d81f1a0b888b46a35';
+  const API_KEY = "pub_d4a030811307474d81f1a0b888b46a35";
   const API_URL = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=agriculture&language=en`;
+
+  useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+  }, []);
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
+        const res = await fetch(API_URL);
+        const data = await res.json();
         setArticles(data.results || []);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching news:", error);
+      } catch (err) {
+        console.error(err);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchNews();
   }, []);
 
-  if (loading) return <div style={styles.loader}>Loading AgroNews...</div>;
+  if (loading)
+    return (
+      <section id={id} className="blog-section">
+        <h2 className="blog-heading">Latest Agriculture Updates</h2>
+        <div className="blog-loading">Loading AgroNews...</div>
+        <style>{`
+          .blog-section { padding: clamp(60px, 10vw, 80px) clamp(20px, 5vw, 48px); background: #fff; }
+          .blog-heading { text-align: center; color: #065f46; font-size: clamp(24px, 4vw, 32px); margin: 0 0 32px; }
+          .blog-loading { text-align: center; color: #64748b; padding: 40px; }
+        `}</style>
+      </section>
+    );
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>Latest Agriculture Updates</h2>
-      <div style={styles.grid}>
-        {articles.map((article, index) => (
-          <div key={index} style={styles.card}>
+    <section id={id} className="blog-section">
+      <h2 className="blog-heading" data-aos="fade-up">Latest Agriculture Updates</h2>
+      <div className="blog-grid">
+        {articles.slice(0, 6).map((article, i) => (
+          <article key={i} className="blog-card" data-aos="fade-up" data-aos-delay={i * 80}>
             {article.image_url && (
-              <img src={article.image_url} alt="news" style={styles.image} />
+              <img src={article.image_url} alt="" className="blog-img" />
             )}
-            <div style={styles.content}>
-              <h3 style={styles.title}>{article.title}</h3>
-              <p style={styles.description}>
-                {article.description?.substring(0, 100)}...
+            <div className="blog-content">
+              <h3 className="blog-title">{article.title}</h3>
+              <p className="blog-desc">
+                {article.description?.substring(0, 120) || "Read more..."}...
               </p>
-              <a href={article.link} target="_blank" rel="noreferrer" style={styles.button}>
+              <a href={article.link} target="_blank" rel="noreferrer" className="blog-link">
                 Read More
               </a>
             </div>
-          </div>
+          </article>
         ))}
       </div>
-    </div>
+      <style>{`
+        .blog-section { padding: clamp(60px, 10vw, 80px) clamp(20px, 5vw, 48px); background: #fff; }
+        .blog-heading { text-align: center; color: #065f46; font-size: clamp(24px, 4vw, 32px); margin: 0 0 40px; }
+        .blog-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 24px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        .blog-card {
+          background: #fff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+          transition: transform 0.3s, box-shadow 0.3s;
+          border: 1px solid #f0f0f0;
+        }
+        .blog-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+        .blog-img { width: 100%; height: 200px; object-fit: cover; }
+        .blog-content { padding: 20px; }
+        .blog-title { font-size: 1.05rem; margin: 0 0 10px; color: #0f172a; font-weight: 600; line-height: 1.4; }
+        .blog-desc { font-size: 0.9rem; color: #64748b; margin: 0 0 16px; line-height: 1.5; }
+        .blog-link { color: #16a34a; font-weight: 600; text-decoration: none; }
+        .blog-link:hover { text-decoration: underline; }
+        @media (max-width: 640px) { .blog-grid { grid-template-columns: 1fr; } }
+      `}</style>
+    </section>
   );
-};
-
-const styles = {
-  container: { padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' },
-  heading: { textAlign: 'center', color: '#1e293b', marginBottom: '30px' },
-  grid: { 
-    display: 'grid', 
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-    gap: '20px' 
-  },
-  card: { 
-    background: '#fff', 
-    borderRadius: '12px', 
-    overflow: 'hidden', 
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)' 
-  },
-  image: { width: '100%', height: '200px', objectFit: 'cover' },
-  content: { padding: '15px' },
-  title: { fontSize: '1.1rem', marginBottom: '10px', color: '#0f172a' },
-  description: { fontSize: '0.9rem', color: '#64748b', marginBottom: '15px' },
-  button: { 
-    color: '#38bdf8', 
-    textDecoration: 'none', 
-    fontWeight: 'bold', 
-    fontSize: '0.9rem' 
-  },
-  loader: { textAlign: 'center', marginTop: '50px', fontSize: '1.2rem' }
 };
 
 export default Blog;

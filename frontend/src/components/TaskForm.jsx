@@ -16,18 +16,13 @@ function TaskForm({ refresh }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value
-    });
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await api.post("/tasks", form);
     refresh();
-
     setForm({
       title: "",
       description: "",
@@ -42,161 +37,93 @@ function TaskForm({ refresh }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <h3 style={styles.heading}>🌾 Add Farm Task</h3>
+    <form onSubmit={handleSubmit} className="taskform">
+      <h3 className="taskform-heading">🌾 Add Farm Task</h3>
 
-      <div style={styles.grid}>
-        <input
-          name="title"
-          placeholder="Task Title"
-          value={form.title}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        <input
-          name="cropName"
-          placeholder="Crop Name"
-          value={form.cropName}
-          onChange={handleChange}
-          style={styles.input}
-        />
-
-        <input
-          name="fieldLocation"
-          placeholder="Field Location"
-          value={form.fieldLocation}
-          onChange={handleChange}
-          style={styles.input}
-        />
-
-        <input
-          type="number"
-          name="estimatedCost"
-          placeholder="Estimated Cost"
-          value={form.estimatedCost}
-          onChange={handleChange}
-          style={styles.input}
-        />
-
-        <select
-          name="taskType"
-          value={form.taskType}
-          onChange={handleChange}
-          style={styles.input}
-        >
+      <div className="taskform-grid">
+        <input name="title" placeholder="Task Title" value={form.title} onChange={handleChange} required />
+        <input name="cropName" placeholder="Crop Name" value={form.cropName} onChange={handleChange} />
+        <input name="fieldLocation" placeholder="Field Location" value={form.fieldLocation} onChange={handleChange} />
+        <input type="number" name="estimatedCost" placeholder="Estimated Cost" value={form.estimatedCost} onChange={handleChange} />
+        <select name="taskType" value={form.taskType} onChange={handleChange}>
           <option>Irrigation</option>
           <option>Fertilizer</option>
           <option>Harvest</option>
           <option>Pesticide</option>
           <option>Other</option>
         </select>
-
-        <select
-          name="priority"
-          value={form.priority}
-          onChange={handleChange}
-          style={styles.input}
-        >
+        <select name="priority" value={form.priority} onChange={handleChange}>
           <option>Low</option>
           <option>Medium</option>
           <option>High</option>
         </select>
-
-        <input
-          type="date"
-          name="dueDate"
-          value={form.dueDate}
-          onChange={handleChange}
-          style={styles.input}
-        />
+        <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} />
       </div>
 
-      <textarea
-        name="description"
-        placeholder="Task Description"
-        value={form.description}
-        onChange={handleChange}
-        style={styles.textarea}
-      />
+      <textarea name="description" placeholder="Task Description" value={form.description} onChange={handleChange} />
 
-      <div style={styles.checkboxRow}>
-        <label style={styles.checkboxLabel}>
-          <input
-            type="checkbox"
-            name="weatherSensitive"
-            checked={form.weatherSensitive}
-            onChange={handleChange}
-          />
-          Weather Sensitive Task
-        </label>
-      </div>
+      <label className="taskform-checkbox">
+        <input type="checkbox" name="weatherSensitive" checked={form.weatherSensitive} onChange={handleChange} />
+        Weather Sensitive Task
+      </label>
 
-      <button type="submit" style={styles.button}>
-        Add Task
-      </button>
+      <button type="submit" className="taskform-btn">Add Task</button>
+
+      <style>{`
+        .taskform {
+          background: #f8fafc;
+          padding: 28px;
+          border-radius: 12px;
+          margin-bottom: 28px;
+          border: 1px solid #e2e8f0;
+        }
+        .taskform-heading { margin: 0 0 20px; color: #065f46; font-size: 18px; }
+        .taskform-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 14px;
+          margin-bottom: 14px;
+        }
+        .taskform input, .taskform select, .taskform textarea {
+          padding: 12px 14px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          font-size: 14px;
+          outline: none;
+          width: 100%;
+          transition: border-color 0.2s;
+        }
+        .taskform input:focus, .taskform select:focus, .taskform textarea:focus {
+          border-color: #16a34a;
+        }
+        .taskform textarea { min-height: 100px; margin-bottom: 14px; resize: vertical; }
+        .taskform-checkbox {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 14px;
+          color: #065f46;
+          margin-bottom: 20px;
+          cursor: pointer;
+        }
+        .taskform-checkbox input { width: auto; }
+        .taskform-btn {
+          width: 100%;
+          padding: 14px;
+          border-radius: 8px;
+          border: none;
+          background: #16a34a;
+          color: #fff;
+          font-weight: 600;
+          font-size: 15px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .taskform-btn:hover { background: #15803d; }
+        @media (max-width: 600px) { .taskform-grid { grid-template-columns: 1fr; } }
+      `}</style>
     </form>
   );
 }
-
-const styles = {
-  form: {
-    background: "#ffffff",
-    padding: "30px",
-    borderRadius: "16px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-    marginBottom: "30px"
-  },
-  heading: {
-    marginBottom: "20px",
-    color: "#065f46"
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "15px",
-    marginBottom: "15px"
-  },
-  input: {
-    padding: "12px 14px",
-    borderRadius: "8px",
-    border: "1px solid #86efac",
-    fontSize: "14px",
-    outline: "none",
-    width: "100%"
-  },
-  textarea: {
-    width: "100%",
-    minHeight: "100px",
-    padding: "12px 14px",
-    borderRadius: "8px",
-    border: "1px solid #86efac",
-    fontSize: "14px",
-    outline: "none",
-    marginBottom: "15px"
-  },
-  checkboxRow: {
-    marginBottom: "20px"
-  },
-  checkboxLabel: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    fontSize: "14px",
-    color: "#065f46"
-  },
-  button: {
-    width: "100%",
-    padding: "12px",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#16a34a",
-    color: "#ffffff",
-    fontWeight: "600",
-    fontSize: "15px",
-    cursor: "pointer"
-  }
-};
 
 export default TaskForm;

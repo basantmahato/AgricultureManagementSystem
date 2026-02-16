@@ -18,9 +18,7 @@ function TaskCard({ task, refresh }) {
           : task.status === "in-progress"
           ? "completed"
           : "pending";
-
       await api.put(`/tasks/${task._id}`, { status: newStatus });
-
       refresh();
     } catch (err) {
       console.error("Status update failed:", err.response?.data || err.message);
@@ -32,215 +30,107 @@ function TaskCard({ task, refresh }) {
     task.status !== "completed" &&
     new Date(task.dueDate) < new Date();
 
-  const priorityColors = {
-    High: "#dc2626",
-    Medium: "#f59e0b",
-    Low: "#16a34a"
-  };
-
-  const statusColors = {
-    pending: "#facc15",
-    "in-progress": "#3b82f6",
-    completed: "#16a34a"
-  };
+  const priorityClass = task.priority ? `priority-${task.priority.toLowerCase()}` : "";
+  const statusClass = task.status ? `status-${task.status.replace("-", "")}` : "";
 
   return (
-    <div style={styles.card}>
-      {/* Header */}
-      <div style={styles.header}>
-        <h3 style={styles.title}>{task.title}</h3>
-
-        <div style={styles.badgeGroup}>
-          <span
-            style={{
-              ...styles.badge,
-              backgroundColor:
-                priorityColors[task.priority] || "#64748b"
-            }}
-          >
-            {task.priority}
-          </span>
-
-          <span
-            style={{
-              ...styles.badge,
-              backgroundColor:
-                statusColors[task.status] || "#64748b"
-            }}
-          >
-            {task.status}
-          </span>
+    <div className="taskcard">
+      <div className="taskcard-header">
+        <h3 className="taskcard-title">{task.title}</h3>
+        <div className="taskcard-badges">
+          <span className={`taskcard-badge ${priorityClass}`}>{task.priority}</span>
+          <span className={`taskcard-badge ${statusClass}`}>{task.status}</span>
         </div>
       </div>
 
-      {/* Overdue Warning */}
       {isOverdue && (
-        <div style={styles.overdue}>
-          ⚠ This task is overdue
-        </div>
+        <div className="taskcard-overdue">⚠ This task is overdue</div>
       )}
 
-      {/* Info Grid */}
-      <div style={styles.grid}>
+      <div className="taskcard-grid">
         <Info label="Type" value={task.taskType} />
         <Info label="Crop" value={task.cropName || "N/A"} />
         <Info label="Field" value={task.fieldLocation || "N/A"} />
-        <Info
-          label="Estimated Cost"
-          value={
-            task.estimatedCost ? `₹${task.estimatedCost}` : "N/A"
-          }
-        />
-        <Info
-          label="Due Date"
-          value={
-            task.dueDate
-              ? new Date(task.dueDate).toLocaleDateString()
-              : "N/A"
-          }
-        />
+        <Info label="Estimated Cost" value={task.estimatedCost ? `₹${task.estimatedCost}` : "N/A"} />
+        <Info label="Due Date" value={task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"} />
       </div>
 
-      {task.description && (
-        <p style={styles.description}>{task.description}</p>
-      )}
+      {task.description && <p className="taskcard-desc">{task.description}</p>}
+      {task.weatherSensitive && <div className="taskcard-weather">🌦 Weather Sensitive</div>}
 
-      {task.weatherSensitive && (
-        <div style={styles.weatherTag}>
-          🌦 Weather Sensitive
-        </div>
-      )}
-
-      {/* Actions */}
-      <div style={styles.actions}>
-        <button
-          style={styles.toggleBtn}
-          onClick={toggleStatus}
-        >
-          Change Status
-        </button>
-
-        <button
-          style={styles.deleteBtn}
-          onClick={deleteTask}
-        >
-          Delete
-        </button>
+      <div className="taskcard-actions">
+        <button className="taskcard-btn taskcard-btn-update" onClick={toggleStatus}>Change Status</button>
+        <button className="taskcard-btn taskcard-btn-delete" onClick={deleteTask}>Delete</button>
       </div>
+
+      <style>{`
+        .taskcard {
+          background: #fff;
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          border: 1px solid #f0f0f0;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .taskcard:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+        .taskcard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .taskcard-title { margin: 0; font-size: 17px; color: #065f46; font-weight: 600; }
+        .taskcard-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .taskcard-badge {
+          padding: 5px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #fff;
+          text-transform: capitalize;
+        }
+        .taskcard-badge.priority-high { background: #dc2626; }
+        .taskcard-badge.priority-medium { background: #f59e0b; }
+        .taskcard-badge.priority-low { background: #16a34a; }
+        .taskcard-badge.status-pending { background: #facc15; color: #1f2937; }
+        .taskcard-badge.status-inprogress { background: #3b82f6; }
+        .taskcard-badge.status-completed { background: #16a34a; }
+        .taskcard-overdue { background: #fee2e2; color: #b91c1c; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .taskcard-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 12px;
+        }
+        .taskcard .taskcard-info { background: #f0fdf4; padding: 12px; border-radius: 8px; }
+        .taskcard .taskcard-info-label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; }
+        .taskcard .taskcard-info-value { font-weight: 600; color: #065f46; }
+        .taskcard-desc { background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 14px; margin: 0; color: #334155; line-height: 1.5; }
+        .taskcard-weather { font-size: 13px; color: #2563eb; font-weight: 600; }
+        .taskcard-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .taskcard-btn {
+          flex: 1;
+          min-width: 120px;
+          padding: 10px 14px;
+          border-radius: 8px;
+          border: none;
+          font-weight: 600;
+          font-size: 14px;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+        .taskcard-btn:hover { opacity: 0.9; }
+        .taskcard-btn-update { background: #16a34a; color: #fff; }
+        .taskcard-btn-delete { background: #dc2626; color: #fff; }
+      `}</style>
     </div>
   );
 }
 
 function Info({ label, value }) {
   return (
-    <div style={styles.infoBox}>
-      <span style={styles.infoLabel}>{label}</span>
-      <span style={styles.infoValue}>{value}</span>
+    <div className="taskcard-info">
+      <span className="taskcard-info-label">{label}</span>
+      <span className="taskcard-info-value">{value}</span>
     </div>
   );
 }
-
-const styles = {
-  card: {
-    background: "#ffffff",
-    padding: "20px",
-    borderRadius: "16px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-    marginBottom: "20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px"
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "10px"
-  },
-  title: {
-    margin: 0,
-    fontSize: "18px",
-    color: "#065f46"
-  },
-  badgeGroup: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap"
-  },
-  badge: {
-    color: "#fff",
-    padding: "5px 10px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    textTransform: "capitalize"
-  },
-  overdue: {
-    background: "#fee2e2",
-    color: "#b91c1c",
-    padding: "8px 12px",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "600"
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(150px, 1fr))",
-    gap: "12px"
-  },
-  infoBox: {
-    background: "#f0fdf4",
-    padding: "10px",
-    borderRadius: "8px",
-    display: "flex",
-    flexDirection: "column"
-  },
-  infoLabel: {
-    fontSize: "12px",
-    color: "#475569"
-  },
-  infoValue: {
-    fontWeight: "600",
-    color: "#065f46"
-  },
-  description: {
-    background: "#f8fafc",
-    padding: "10px",
-    borderRadius: "8px",
-    fontSize: "14px"
-  },
-  weatherTag: {
-    fontSize: "13px",
-    color: "#2563eb",
-    fontWeight: "600"
-  },
-  actions: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap"
-  },
-  toggleBtn: {
-    flex: "1",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#16a34a",
-    color: "#fff",
-    cursor: "pointer",
-    fontWeight: "600"
-  },
-  deleteBtn: {
-    flex: "1",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    backgroundColor: "#dc2626",
-    color: "#fff",
-    cursor: "pointer",
-    fontWeight: "600"
-  }
-};
 
 export default TaskCard;
