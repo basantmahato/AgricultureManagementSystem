@@ -12,7 +12,9 @@ import KnowYourSoil from "./pages/KnowYourSoil";
 import Store from "./pages/Store";
 import Cart from "./pages/Cart";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import AdminDashboard from "./pages/AdminDashboard";
+import Contact from "./pages/Contact";
 
 function ProtectedRoute({ children }) {
   const { user } = useContext(AuthContext);
@@ -61,6 +63,8 @@ function App() {
         <Route path="/store" element={<Store />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/contact" element={<Contact />} />
         <Route
           path="/admin"
           element={

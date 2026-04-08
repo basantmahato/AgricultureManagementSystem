@@ -1,18 +1,29 @@
+import { getMongoUri } from "./loadEnv.js";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import app from "./app.js";
 
-dotenv.config();
+const PORT = process.env.PORT || 3000;
+const mongoUri = getMongoUri();
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected");
-
-    app.listen(process.env.PORT, () => {
-      console.log(`Server running on port ${process.env.PORT}`);
+if (mongoUri) {
+  mongoose
+    .connect(mongoUri)
+    .then(() => console.log("MongoDB Connected"))
+    .catch((err) => {
+      console.error("DB Connection Error:", err.message);
+      console.error(
+        "API will still start; database routes may fail until MongoDB is reachable."
+      );
     });
-  })
-  .catch((err) => {
-    console.log("DB Connection Error:", err.message);
-  });
+} else {
+  console.error(
+    "DB Connection Error: Missing MONGO_URI or MONGODB_URI in backend/.env"
+  );
+  console.error(
+    "API will still start; database routes may fail after you set the URI."
+  );
+}
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});

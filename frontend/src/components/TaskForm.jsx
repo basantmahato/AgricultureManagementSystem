@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Sprout } from "lucide-react";
 import api from "../services/api";
 
 function TaskForm({ refresh }) {
@@ -38,7 +39,12 @@ function TaskForm({ refresh }) {
 
   return (
     <form onSubmit={handleSubmit} className="taskform">
-      <h3 className="taskform-heading">🌾 Add Farm Task</h3>
+      <h3 className="taskform-heading">
+        <span className="taskform-heading-icon" aria-hidden>
+          <Sprout size={22} strokeWidth={2} />
+        </span>
+        Add Farm Task
+      </h3>
 
       <div className="taskform-grid">
         <input name="title" placeholder="Task Title" value={form.title} onChange={handleChange} required />
@@ -71,13 +77,23 @@ function TaskForm({ refresh }) {
 
       <style>{`
         .taskform {
-          background: #f8fafc;
+          background: #fff;
           padding: 28px;
           border-radius: 12px;
           margin-bottom: 28px;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--color-border, #e2e8f0);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .taskform-heading { margin: 0 0 20px; color: #065f46; font-size: 18px; }
+        .taskform-heading {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0 0 20px;
+          color: #166534;
+          font-size: 1.1rem;
+          font-family: var(--font-heading);
+        }
+        .taskform-heading-icon { display: flex; color: #16a34a; flex-shrink: 0; }
         .taskform-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -110,12 +126,13 @@ function TaskForm({ refresh }) {
         .taskform-btn {
           width: 100%;
           padding: 14px;
-          border-radius: 8px;
+          border-radius: 10px;
           border: none;
-          background: #16a34a;
+          background: var(--color-primary, #16a34a);
           color: #fff;
           font-weight: 600;
           font-size: 15px;
+          font-family: var(--font-body);
           cursor: pointer;
           transition: background 0.2s;
         }

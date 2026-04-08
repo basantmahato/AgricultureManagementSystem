@@ -8,7 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node seedEquipment.js"
+    "seed": "node seedEquipment.js",
+    "seed:blog": "node seedBlog.js",
+    "seed:admin": "node seedAdmin.js",
+    "seed:admin:force": "node seedAdmin.js --force",
+    "seed:all": "node seedAll.js",
+    "seed:all:force": "node seedAll.js --force"
   },
   "keywords": [],
   "author": "",

@@ -1,58 +1,91 @@
 import { Link } from "react-router-dom";
 
+const SITE_LINKS = [
+  { to: "/", label: "Home" },
+  { to: "/store", label: "Our store" },
+  { to: "/know-your-soil", label: "Know your soil" },
+  { to: "/blog", label: "Farm blog" },
+  { to: "/contact", label: "Contact" }
+];
+
+const ACCOUNT_LINKS = [
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/tasks", label: "Tasks" },
+  { to: "/cart", label: "Cart" },
+  { to: "/login", label: "Log in" }
+];
+
 function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="footer">
-      <div className="footer-grid">
-        <div className="footer-block">
-          <h3 className="footer-logo">agroFarm</h3>
-          <p className="footer-text">
-            Smart farm management platform with real-time weather insights and equipment marketplace.
-          </p>
+    <footer className="site-footer">
+      <div className="site-footer__inner">
+        <div className="site-footer__grid">
+          <div className="site-footer__brand-col">
+            <Link to="/" className="site-footer__brand">
+              agroFarm
+            </Link>
+            <p className="site-footer__about">
+              Farm tasks, soil tests, and equipment in one place—built for growers who want clarity, not clutter.
+            </p>
+          </div>
+
+          <nav className="site-footer__nav" aria-label="Site pages">
+            <p className="site-footer__heading">Site</p>
+            <ul className="site-footer__list">
+              {SITE_LINKS.map(({ to, label }) => (
+                <li key={to}>
+                  <Link to={to} className="site-footer__link">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav className="site-footer__nav" aria-label="Account">
+            <p className="site-footer__heading">Account</p>
+            <ul className="site-footer__list">
+              {ACCOUNT_LINKS.map(({ to, label }) => (
+                <li key={to}>
+                  <Link to={to} className="site-footer__link">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="site-footer__contact">
+            <p className="site-footer__heading">Contact</p>
+            <p className="site-footer__contact-text">
+              <a href="mailto:support@agrofarm.com" className="site-footer__email">
+                support@agrofarm.com
+              </a>
+            </p>
+            <p className="site-footer__location">India</p>
+            <Link to="/contact" className="site-footer__cta">
+              Send a message
+            </Link>
+          </div>
         </div>
-        <div className="footer-block">
-          <h4 className="footer-head">Quick Links</h4>
-          <Link to="/" className="footer-link">Home</Link>
-          <Link to="/dashboard" className="footer-link">Dashboard</Link>
-          <Link to="/tasks" className="footer-link">Tasks</Link>
-        </div>
-        <div className="footer-block">
-          <h4 className="footer-head">Contact</h4>
-          <p className="footer-text">support@agrofarm.com</p>
-          <p className="footer-text">India</p>
+
+        <div className="site-footer__base">
+          <p className="site-footer__copy">© {year} agroFarm. All rights reserved.</p>
+          <nav className="site-footer__meta" aria-label="Footer shortcuts">
+            <Link to="/blog" className="site-footer__meta-link">
+              Blog
+            </Link>
+            <Link to="/store" className="site-footer__meta-link">
+              Store
+            </Link>
+            <Link to="/contact" className="site-footer__meta-link">
+              Help
+            </Link>
+          </nav>
         </div>
       </div>
-      <div className="footer-bottom">
-        © {new Date().getFullYear()} agroFarm. All rights reserved.
-      </div>
-      <style>{`
-        .footer {
-          background: linear-gradient(135deg, #0f172a, #020617);
-          color: #cbd5e1;
-          margin-top: 0;
-        }
-        .footer-grid {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: clamp(40px, 8vw, 60px) clamp(20px, 5vw, 48px);
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 32px;
-        }
-        .footer-block { display: flex; flex-direction: column; gap: 12px; }
-        .footer-logo { color: #fff; font-size: 18px; font-weight: 700; margin: 0; }
-        .footer-head { color: #fff; font-size: 14px; font-weight: 600; margin: 0 0 4px; }
-        .footer-text { font-size: 14px; line-height: 1.6; margin: 0; }
-        .footer-link { font-size: 14px; color: #94a3b8; text-decoration: none; transition: color 0.2s; }
-        .footer-link:hover { color: #16a34a; }
-        .footer-bottom {
-          text-align: center;
-          padding: 20px 16px;
-          border-top: 1px solid rgba(255,255,255,0.08);
-          font-size: 13px;
-          color: #94a3b8;
-        }
-      `}</style>
     </footer>
   );
 }

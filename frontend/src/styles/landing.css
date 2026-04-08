@@ -1,0 +1,19 @@
+/* Landing page (Home) — section rhythm and backgrounds */
+.landing-home {
+  overflow-x: hidden;
+}
+
+.landing-home > section {
+  position: relative;
+}
+
+.landing-section-label {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+}

@@ -10,6 +10,8 @@ import adminRoutes from "./routes/adminRoutes.js";
 import soilRoutes from "./routes/soilRoutes.js";
 import equipmentRoutes from "./routes/equipmentRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +29,8 @@ app.use("/admin", adminRoutes);
 app.use("/soil", soilRoutes);
 app.use("/equipment", equipmentRoutes);
 app.use("/orders", orderRoutes);
+app.use("/blogs", blogRoutes);
+app.use("/contact", contactRoutes);
 
 app.get("/", (req, res) => {
   res.send("API Running...");

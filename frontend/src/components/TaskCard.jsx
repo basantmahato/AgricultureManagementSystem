@@ -1,3 +1,4 @@
+import { AlertTriangle, CloudSun } from "lucide-react";
 import api from "../services/api";
 
 function TaskCard({ task, refresh }) {
@@ -44,7 +45,10 @@ function TaskCard({ task, refresh }) {
       </div>
 
       {isOverdue && (
-        <div className="taskcard-overdue">⚠ This task is overdue</div>
+        <div className="taskcard-overdue">
+          <AlertTriangle size={16} strokeWidth={2} aria-hidden className="taskcard-overdue-icon" />
+          <span>This task is overdue</span>
+        </div>
       )}
 
       <div className="taskcard-grid">
@@ -56,7 +60,12 @@ function TaskCard({ task, refresh }) {
       </div>
 
       {task.description && <p className="taskcard-desc">{task.description}</p>}
-      {task.weatherSensitive && <div className="taskcard-weather">🌦 Weather Sensitive</div>}
+      {task.weatherSensitive && (
+        <div className="taskcard-weather">
+          <CloudSun size={16} strokeWidth={2} aria-hidden className="taskcard-weather-icon" />
+          <span>Weather Sensitive</span>
+        </div>
+      )}
 
       <div className="taskcard-actions">
         <button className="taskcard-btn taskcard-btn-update" onClick={toggleStatus}>Change Status</button>
@@ -68,16 +77,22 @@ function TaskCard({ task, refresh }) {
           background: #fff;
           padding: 20px;
           border-radius: 12px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
           display: flex;
           flex-direction: column;
           gap: 16px;
-          border: 1px solid #f0f0f0;
+          border: 1px solid var(--color-border, #e2e8f0);
           transition: transform 0.2s, box-shadow 0.2s;
         }
-        .taskcard:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+        .taskcard:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
         .taskcard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .taskcard-title { margin: 0; font-size: 17px; color: #065f46; font-weight: 600; }
+        .taskcard-title {
+          margin: 0;
+          font-size: 17px;
+          color: #166534;
+          font-weight: 700;
+          font-family: var(--font-heading);
+        }
         .taskcard-badges { display: flex; gap: 8px; flex-wrap: wrap; }
         .taskcard-badge {
           padding: 5px 12px;
@@ -93,7 +108,18 @@ function TaskCard({ task, refresh }) {
         .taskcard-badge.status-pending { background: #facc15; color: #1f2937; }
         .taskcard-badge.status-inprogress { background: #3b82f6; }
         .taskcard-badge.status-completed { background: #16a34a; }
-        .taskcard-overdue { background: #fee2e2; color: #b91c1c; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .taskcard-overdue {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #fee2e2;
+          color: #b91c1c;
+          padding: 10px 14px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .taskcard-overdue-icon { flex-shrink: 0; }
         .taskcard-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -103,16 +129,25 @@ function TaskCard({ task, refresh }) {
         .taskcard .taskcard-info-label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; }
         .taskcard .taskcard-info-value { font-weight: 600; color: #065f46; }
         .taskcard-desc { background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 14px; margin: 0; color: #334155; line-height: 1.5; }
-        .taskcard-weather { font-size: 13px; color: #2563eb; font-weight: 600; }
+        .taskcard-weather {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          color: #2563eb;
+          font-weight: 600;
+        }
+        .taskcard-weather-icon { flex-shrink: 0; }
         .taskcard-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .taskcard-btn {
           flex: 1;
           min-width: 120px;
           padding: 10px 14px;
-          border-radius: 8px;
+          border-radius: 10px;
           border: none;
           font-weight: 600;
           font-size: 14px;
+          font-family: var(--font-body);
           cursor: pointer;
           transition: opacity 0.2s;
         }

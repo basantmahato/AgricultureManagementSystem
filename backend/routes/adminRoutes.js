@@ -1,5 +1,14 @@
 import express from "express";
-import { getAllUsers, getAllTasks, getAdminStats, getAllSoilBookings, updateSoilStatus, getAllOrders, updateOrderStatus } from "../controllers/adminController.js";
+import {
+  getAllUsers,
+  getAllTasks,
+  getAdminStats,
+  getAllSoilBookings,
+  updateSoilStatus,
+  getAllOrders,
+  updateOrderStatus,
+  getAllContactInquiries
+} from "../controllers/adminController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { adminMiddleware } from "../middleware/adminMiddleware.js";
 
@@ -15,5 +24,6 @@ router.get("/soil", getAllSoilBookings);
 router.put("/soil/:id/status", updateSoilStatus);
 router.get("/orders", getAllOrders);
 router.put("/orders/:id/status", updateOrderStatus);
+router.get("/contacts", getAllContactInquiries);
 
 export default router;

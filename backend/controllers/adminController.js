@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Task from "../models/Task.js";
 import SoilBooking from "../models/SoilBooking.js";
 import Order from "../models/Order.js";
+import ContactInquiry from "../models/ContactInquiry.js";
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -33,6 +34,7 @@ export const getAdminStats = async (req, res) => {
 
     const totalSoilBookings = await SoilBooking.countDocuments();
     const totalOrders = await Order.countDocuments();
+    const totalContactInquiries = await ContactInquiry.countDocuments();
 
     res.json({
       users: totalUsers,
@@ -41,7 +43,8 @@ export const getAdminStats = async (req, res) => {
       completedTasks,
       pendingTasks,
       totalSoilBookings,
-      totalOrders
+      totalOrders,
+      totalContactInquiries
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -83,6 +86,15 @@ export const getAllOrders = async (req, res) => {
       .populate("items.equipment", "name price")
       .sort({ createdAt: -1 });
     res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getAllContactInquiries = async (req, res) => {
+  try {
+    const inquiries = await ContactInquiry.find().sort({ createdAt: -1 });
+    res.json(inquiries);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
