@@ -1,5 +1,7 @@
 # Entity Relationship (ER) Diagram - agroFarm System
 
+Reflects Mongoose models in `backend/models/`.
+
 ## ER Diagram
 
 ```mermaid
@@ -9,7 +11,7 @@ erDiagram
     USER ||--o{ ORDER : places
     ORDER ||--o{ ORDER_ITEM : contains
     ORDER_ITEM }o--|| EQUIPMENT : references
-    
+
     USER {
         ObjectId _id PK
         string name
@@ -20,7 +22,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     TASK {
         ObjectId _id PK
         ObjectId user FK
@@ -39,7 +41,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     SOIL_BOOKING {
         ObjectId _id PK
         ObjectId user FK
@@ -55,7 +57,7 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     EQUIPMENT {
         ObjectId _id PK
         string name
@@ -67,10 +69,10 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     ORDER {
         ObjectId _id PK
-        ObjectId user FK
+        ObjectId user FK "nullable guest"
         array items
         number totalAmount
         string shippingAddress
@@ -82,90 +84,101 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
-    
+
     ORDER_ITEM {
         ObjectId equipment FK
         string name
         number price
         number quantity
     }
+
+    BLOG {
+        ObjectId _id PK
+        string slug UK
+        string title
+        string excerpt
+        string body
+        string category
+        string image
+        date publishedAt
+        number readTimeMinutes
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    CONTACT_INQUIRY {
+        ObjectId _id PK
+        string name
+        string email
+        string subject
+        string message
+        datetime createdAt
+        datetime updatedAt
+    }
 ```
 
-## Entity Descriptions
-
-### USER Entity
-- **Primary Key**: _id
-- **Unique**: email
-- **Attributes**: name, email, password, location, role (user/admin)
-- **Relationships**: 
-  - One-to-Many with TASK
-  - One-to-Many with SOIL_BOOKING
-  - One-to-Many with ORDER
-
-### TASK Entity
-- **Primary Key**: _id
-- **Foreign Key**: user (references USER)
-- **Attributes**: title, description, taskType, priority, status, cropName, fieldLocation, estimatedCost, actualCost, dueDate, notes, weatherSensitive
-- **Relationships**: Many-to-One with USER
-
-### SOIL_BOOKING Entity
-- **Primary Key**: _id
-- **Foreign Key**: user (references USER)
-- **Attributes**: soilType, cropDescription, testingCenter, location, mobile, soilTests (pH, nitrogen, phosphorus, potassium), soilPhotos, status, adminNotes
-- **Relationships**: Many-to-One with USER
-
-### EQUIPMENT Entity
-- **Primary Key**: _id
-- **Attributes**: name, description, price, image, category, inStock
-- **Relationships**: One-to-Many with ORDER_ITEM
-
-### ORDER Entity
-- **Primary Key**: _id
-- **Foreign Key**: user (references USER, nullable for guest orders)
-- **Attributes**: items (array of ORDER_ITEM), totalAmount, shippingAddress, mobile, customerName, customerEmail, paymentMethod, status
-- **Relationships**: 
-  - Many-to-One with USER (optional)
-  - One-to-Many with ORDER_ITEM
-
-### ORDER_ITEM Entity (Embedded)
-- **Foreign Key**: equipment (references EQUIPMENT)
-- **Attributes**: name, price, quantity
-- **Relationships**: Many-to-One with EQUIPMENT, Embedded in ORDER
-
-## Relationship Cardinalities
-
-| Relationship | Type | Description |
-|-------------|------|-------------|
-| USER → TASK | 1:N | One user can create many tasks |
-| USER → SOIL_BOOKING | 1:N | One user can submit many soil bookings |
-| USER → ORDER | 1:N | One user can place many orders |
-| ORDER → ORDER_ITEM | 1:N | One order contains many items |
-| EQUIPMENT → ORDER_ITEM | 1:N | One equipment can be in many order items |
-
-## Attributes Details
+## Entity summaries
 
 ### USER
-- **name**: String, required
-- **email**: String, required, unique
-- **password**: String, required, hashed
-- **location**: String, optional
-- **role**: Enum ["user", "admin"], default "user"
+
+- **PK**: `_id`
+- **Unique**: `email`
+- **role**: `"user"` | `"admin"`
+- **Relations**: 1:N Task, SoilBooking, Order (order.user optional for guests)
 
 ### TASK
-- **taskType**: Enum ["Irrigation", "Fertilizer", "Harvest", "Pesticide", "Other"]
-- **priority**: Enum ["Low", "Medium", "High"]
-- **status**: Enum ["pending", "in-progress", "completed"]
+
+- **FK**: `user` → User (required)
+- **taskType**: Irrigation | Fertilizer | Harvest | Pesticide | Other
+- **priority**: Low | Medium | High
+- **status**: pending | in-progress | completed
 
 ### SOIL_BOOKING
-- **soilTests**: Object with boolean fields (pH, nitrogen, phosphorus, potassium)
-- **soilPhotos**: Array of file paths
-- **status**: Enum ["pending", "in-progress", "completed"]
 
-### ORDER
-- **paymentMethod**: String, default "COD" (Cash on Delivery)
-- **status**: Enum ["pending", "confirmed", "shipped", "delivered"]
-- **user**: Optional (allows guest orders)
+- **FK**: `user` → User (required)
+- **soilTests**: `{ pH, nitrogen, phosphorus, potassium }` booleans
+- **soilPhotos**: string paths under `/uploads/...`
+- **status**: pending | in-progress | completed
+- **adminNotes**: optional string (admin updates)
 
 ### EQUIPMENT
-- **category**: String, default "General"
-- **inStock**: Boolean, default true
+
+- Catalog only; referenced by embedded order line items.
+
+### ORDER
+
+- **user**: optional ObjectId (guest checkout)
+- **items**: embedded subdocuments (equipment ref + snapshot name, price, quantity)
+- **status**: pending | confirmed | shipped | delivered
+- **paymentMethod**: default `"COD"`
+
+### ORDER_ITEM (embedded in Order)
+
+- Not a separate collection; shown for clarity.
+- **equipment**: ObjectId ref Equipment
+
+### BLOG
+
+- **slug**: unique, lowercase (used in `/blog/:slug`)
+- Content managed in DB (seed scripts: `seedBlog.js`, etc.)
+- No foreign key to User in the current schema (author not modeled)
+
+### CONTACT_INQUIRY
+
+- Public contact form submissions
+- **No** user FK — standalone leads for admin review (`GET /admin/contacts`)
+
+## Cardinalities
+
+| From | To | Cardinality |
+|------|-----|-------------|
+| User | Task | 1:N |
+| User | SoilBooking | 1:N |
+| User | Order | 1:N (optional participation on Order side) |
+| Order | OrderItem | 1:N embedded |
+| Equipment | Order line | 1:N logical (via ref in embedded items) |
+
+## MongoDB indexes (from code)
+
+- **Blog**: indexes on `publishedAt`, `category` (`blogSchema.index` in `Blog.js`).
+- **User**: unique index on `email` (Mongoose unique).

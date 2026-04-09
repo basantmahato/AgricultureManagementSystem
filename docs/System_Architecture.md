@@ -1,203 +1,206 @@
 # System Architecture - agroFarm Platform
 
+Documentation aligned with the current repository: Express + MongoDB backend, React (Vite) frontend, JWT auth, and REST APIs under route modules in `backend/`.
+
 ## High-Level Architecture
 
 ```mermaid
 graph TB
     subgraph "Client Layer"
-        WebApp[React Frontend<br/>Port: 5173]
-        Mobile[Future Mobile App]
+        WebApp[React SPA<br/>Vite dev: 5173]
     end
-    
-    subgraph "API Gateway / Backend"
-        Express[Express.js Server<br/>Port: 5000]
-        Routes[API Routes]
-        Middleware[Auth & Validation Middleware]
+
+    subgraph "Backend"
+        Express[Express.js API<br/>PORT 3000 default]
+        Routes[Route modules]
+        MW[Auth / Admin / Upload middleware]
     end
-    
-    subgraph "Business Logic Layer"
-        AuthCtrl[Authentication Controller]
-        UserCtrl[User Controller]
-        TaskCtrl[Task Controller]
-        SoilCtrl[Soil Controller]
-        OrderCtrl[Order Controller]
-        AdminCtrl[Admin Controller]
+
+    subgraph "Business Logic"
+        AuthCtrl[authController]
+        UserCtrl[userController]
+        TaskCtrl[taskController]
+        SoilCtrl[soilController]
+        OrderCtrl[orderController]
+        EquipCtrl[equipmentController]
+        BlogCtrl[blogController]
+        ContactCtrl[contactController]
+        AdminCtrl[adminController]
     end
-    
+
     subgraph "Data Layer"
-        MongoDB[(MongoDB Database)]
-        FileStorage[File Storage<br/>uploads/]
+        MongoDB[(MongoDB)]
+        Uploads[Static /uploads]
     end
-    
-    subgraph "External Services"
-        WeatherAPI[OpenWeatherMap API]
-        NewsAPI[NewsData.io API]
+
+    subgraph "External APIs client-side"
+        WeatherAPI[OpenWeatherMap]
     end
-    
-    WebApp -->|HTTP/HTTPS| Express
-    Mobile -->|HTTP/HTTPS| Express
-    
+
+    WebApp -->|REST + Bearer JWT| Express
+    WebApp -->|fetch| WeatherAPI
+
     Express --> Routes
-    Routes --> Middleware
-    Middleware --> AuthCtrl
-    Middleware --> UserCtrl
-    Middleware --> TaskCtrl
-    Middleware --> SoilCtrl
-    Middleware --> OrderCtrl
-    Middleware --> AdminCtrl
-    
+    Routes --> MW
+    MW --> AuthCtrl
+    MW --> UserCtrl
+    MW --> TaskCtrl
+    MW --> SoilCtrl
+    MW --> OrderCtrl
+    MW --> EquipCtrl
+    MW --> BlogCtrl
+    MW --> ContactCtrl
+    MW --> AdminCtrl
+
     AuthCtrl --> MongoDB
     UserCtrl --> MongoDB
     TaskCtrl --> MongoDB
     SoilCtrl --> MongoDB
+    SoilCtrl --> Uploads
     OrderCtrl --> MongoDB
+    EquipCtrl --> MongoDB
+    BlogCtrl --> MongoDB
+    ContactCtrl --> MongoDB
     AdminCtrl --> MongoDB
-    
-    SoilCtrl --> FileStorage
-    OrderCtrl --> MongoDB
-    
-    TaskCtrl --> WeatherAPI
-    WebApp --> NewsAPI
 ```
 
-## Detailed Component Architecture
+## Detailed Component Flow
 
 ```mermaid
 graph LR
-    subgraph "Frontend - React Application"
-        A[React Router] --> B[Pages]
-        B --> C[Components]
-        C --> D[Context API]
-        D --> E[API Service]
+    subgraph "Frontend"
+        Router[React Router]
+        Pages[Pages]
+        Components[Components]
+        Ctx[AuthContext / CartContext]
+        Api[Axios api.js]
     end
-    
-    subgraph "Backend - Node.js/Express"
-        F[Express App] --> G[Routes]
-        G --> H[Middleware]
-        H --> I[Controllers]
-        I --> J[Models]
-        J --> K[MongoDB]
+
+    subgraph "Backend"
+        App[app.js]
+        R[Routes]
+        M[Middleware]
+        Ctrl[Controllers]
+        Models[Mongoose Models]
     end
-    
-    E -->|REST API| F
-    I --> L[File Upload<br/>Multer]
-    L --> M[File System]
+
+    Api -->|HTTPS| App
+    App --> R --> M --> Ctrl --> Models --> MongoDB[(MongoDB)]
+    SoilCtrl -.->|Multer| FS[/uploads/]
 ```
 
 ## Technology Stack
 
-### Frontend
-- **Framework**: React 19.2.0
-- **Routing**: React Router DOM 6.30.3
-- **State Management**: React Context API
-- **Styling**: Plain CSS (inline styles)
-- **Animations**: AOS (Animate On Scroll) 2.3.4
-- **HTTP Client**: Axios 1.13.5
-- **Build Tool**: Vite 7.3.1
+### Frontend (`frontend/package.json`)
 
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js 4.18.2
-- **Database**: MongoDB (Mongoose 8.0.3)
-- **Authentication**: JWT (jsonwebtoken 9.0.2)
-- **Password Hashing**: bcryptjs 2.4.3
-- **File Upload**: Multer 2.0.2
-- **CORS**: cors 2.8.5
+| Area | Technology |
+|------|------------|
+| UI | React 19, React Router DOM 6 |
+| Build | Vite 7 |
+| HTTP | Axios |
+| Icons | lucide-react |
+| Motion | GSAP + @gsap/react, AOS |
+| Styling | Global CSS (`index.css`, `styles/components.css`, `styles/landing.css`) plus scoped `<style>` on some pages |
 
-### External APIs
-- **Weather**: OpenWeatherMap API
-- **News**: NewsData.io API
+### Backend (`backend/package.json`)
+
+| Area | Technology |
+|------|------------|
+| Runtime | Node.js (ES modules) |
+| Server | Express 4 |
+| Database | MongoDB via Mongoose 8 |
+| Auth | JWT (jsonwebtoken), bcryptjs |
+| Uploads | Multer → `uploads/` served at `GET /uploads/...` |
+| Config | dotenv via `loadEnv.js` |
+
+### External services
+
+- **OpenWeatherMap**: Called from the **browser** (Dashboard / Admin weather UI), not from Express.
+- **Farm blog**: Articles are stored in **MongoDB** (`Blog` model), exposed as `GET /blogs` and `GET /blogs/:slug`. There is no NewsData.io integration in the active blog pages.
 
 ## System Layers
 
-### 1. Presentation Layer (Frontend)
+### 1. Presentation layer (frontend)
+
+- **Public**: Home, Store, Cart, Know your soil, Blog list & post, Contact, Login, Register.
+- **Authenticated (user)**: Dashboard (overview, weather, soil bookings, equipment orders), Tasks.
+- **Admin**: Admin dashboard (users, tasks, soil bookings, orders, contact leads, weather).
+
+Contexts: **AuthContext** (user + JWT in `localStorage`), **CartContext** (cart persisted in `localStorage`).
+
+### 2. Application layer (backend routes)
+
+Mounted in `app.js`:
+
+| Prefix | Purpose |
+|--------|---------|
+| `/auth` | Register, login |
+| `/user` | Authenticated user dashboard payload |
+| `/tasks` | CRUD tasks (JWT required) |
+| `/admin` | Admin-only stats and CRUD views |
+| `/soil` | Soil bookings (JWT + multipart upload) |
+| `/equipment` | Equipment catalog (read) |
+| `/orders` | Create order (optional JWT), list my orders (JWT) |
+| `/blogs` | List / paginate posts, get by slug (public) |
+| `/contact` | Submit contact inquiry (public POST) |
+
+### 3. Data access layer (Mongoose)
+
+Models under `backend/models/`: **User**, **Task**, **SoilBooking**, **Equipment**, **Order**, **Blog**, **ContactInquiry**.
+
+### 4. Persistence (MongoDB collections)
+
+Typical collection names: `users`, `tasks`, `soilbookings`, `equipment`, `orders`, `blogs`, `contactinquiries` (Mongoose pluralization).
+
+## REST API Summary
+
+Base URL: `http://localhost:3000` (or `VITE_API_URL` from the frontend). All JSON unless noted.
+
 ```
-┌─────────────────────────────────────┐
-│  React Components                    │
-│  - Pages (Home, Dashboard, etc.)    │
-│  - Components (Navbar, Cards, etc.)  │
-│  - Context (Auth, Cart)             │
-└─────────────────────────────────────┘
+/auth
+  POST /register
+  POST /login
+
+/user
+  GET  /dashboard          (JWT)
+
+/tasks
+  POST   /
+  GET    /
+  GET    /:id
+  PUT    /:id
+  DELETE /:id               (all JWT)
+
+/soil
+  POST /                    (JWT, multipart: soilPhotos + fields)
+  GET  /                    (JWT, current user’s bookings)
+
+/equipment
+  GET /                     (public catalog)
+
+/orders
+  POST /                    (optional JWT — guest checkout allowed)
+  GET  /my                  (JWT)
+
+/blogs
+  GET /                     (optional ?page=&pageSize=)
+  GET /:slug                (single article)
+
+/contact
+  POST /                    (public JSON: name, email, subject?, message)
+
+/admin                      (JWT + admin role)
+  GET  /stats
+  GET  /users
+  GET  /tasks
+  GET  /soil
+  PUT  /soil/:id/status     (body: status, optional adminNotes)
+  GET  /orders
+  PUT  /orders/:id/status   (body: status)
+  GET  /contacts            (contact form leads)
 ```
 
-### 2. Application Layer (Backend)
-```
-┌─────────────────────────────────────┐
-│  Express Routes & Controllers        │
-│  - /auth (login, register)         │
-│  - /user (dashboard)                │
-│  - /tasks (CRUD operations)         │
-│  - /soil (soil bookings)            │
-│  - /equipment (catalog)             │
-│  - /orders (order management)       │
-│  - /admin (admin operations)        │
-└─────────────────────────────────────┘
-```
-
-### 3. Data Access Layer
-```
-┌─────────────────────────────────────┐
-│  Mongoose Models                     │
-│  - User Model                        │
-│  - Task Model                       │
-│  - SoilBooking Model                │
-│  - Equipment Model                  │
-│  - Order Model                      │
-└─────────────────────────────────────┘
-```
-
-### 4. Data Storage Layer
-```
-┌─────────────────────────────────────┐
-│  MongoDB Collections                 │
-│  - users                            │
-│  - tasks                            │
-│  - soilbookings                     │
-│  - equipment                        │
-│  - orders                           │
-└─────────────────────────────────────┘
-```
-
-## API Architecture
-
-### RESTful API Structure
-```
-Base URL: http://localhost:5000/ (or deployed URL)
-
-├── /auth
-│   ├── POST /register    - User registration
-│   └── POST /login       - User login
-│
-├── /user
-│   └── GET /dashboard    - Get user dashboard data
-│
-├── /tasks
-│   ├── GET /             - Get user's tasks
-│   ├── POST /            - Create task
-│   ├── GET /:id          - Get task by ID
-│   ├── PUT /:id          - Update task
-│   └── DELETE /:id      - Delete task
-│
-├── /soil
-│   ├── POST /            - Create soil booking
-│   └── GET /             - Get user's soil bookings
-│
-├── /equipment
-│   └── GET /             - Get all equipment
-│
-├── /orders
-│   ├── POST /            - Create order (COD)
-│   └── GET /my           - Get user's orders
-│
-└── /admin
-    ├── GET /stats        - Get admin statistics
-    ├── GET /users        - Get all users
-    ├── GET /tasks        - Get all tasks
-    ├── GET /soil         - Get all soil bookings
-    ├── PUT /soil/:id/status - Update soil booking status
-    ├── GET /orders       - Get all orders
-    └── PUT /orders/:id/status - Update order status
-```
+Static files: `GET /uploads/<filename>` (soil photos, etc.).
 
 ## Authentication Flow
 
@@ -206,87 +209,54 @@ sequenceDiagram
     participant U as User
     participant F as Frontend
     participant B as Backend
-    participant DB as Database
-    
-    U->>F: Login Request
+    participant DB as MongoDB
+
+    U->>F: Login
     F->>B: POST /auth/login
-    B->>DB: Verify Credentials
-    DB-->>B: User Data
-    B->>B: Generate JWT Token
-    B-->>F: Token + User Data
-    F->>F: Store Token & User
-    F-->>U: Redirect to Dashboard/Admin
+    B->>DB: find user, compare password
+    DB-->>B: user document
+    B-->>F: JWT + user (no password)
+    F->>F: localStorage token + AuthContext
+    F-->>U: Redirect dashboard or admin
 ```
 
-## Request Flow
+Axios attaches `Authorization: Bearer <token>` for protected routes (`frontend/src/services/api.js`).
+
+## Request Flow (protected route)
 
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant M as Middleware
+    participant M as authMiddleware / adminMiddleware
     participant Ctrl as Controller
-    participant DB as Database
-    
-    C->>M: HTTP Request + Token
-    M->>M: Validate Token
-    M->>M: Check Permissions
-    M->>Ctrl: Authorized Request
-    Ctrl->>DB: Query/Update
-    DB-->>Ctrl: Data
-    Ctrl-->>C: JSON Response
+    participant DB as MongoDB
+
+    C->>M: Request + Bearer token
+    M->>M: Verify JWT, load role if admin
+    M->>Ctrl: next()
+    Ctrl->>DB: query / update
+    DB-->>Ctrl: result
+    Ctrl-->>C: JSON
 ```
 
-## Security Architecture
+## Security (as implemented)
 
-```
-┌─────────────────────────────────────┐
-│  Security Layers                    │
-├─────────────────────────────────────┤
-│  1. CORS Configuration              │
-│  2. JWT Token Authentication        │
-│  3. Password Hashing (bcrypt)       │
-│  4. Input Validation                │
-│  5. Role-Based Access Control       │
-│  6. File Upload Validation          │
-└─────────────────────────────────────┘
-```
+- CORS enabled for browser clients.
+- Passwords hashed with bcrypt on register.
+- JWT for API authentication; admin routes use `adminMiddleware`.
+- Soil uploads: Multer (type/limits per `uploadMiddleware.js`).
+- Input validation varies by controller (required fields on contact, orders, etc.).
 
-## Deployment Architecture
+## File uploads
 
-```mermaid
-graph TB
-    subgraph "Production Environment"
-        A[Frontend<br/>Vite Build] --> B[Static Hosting<br/>Vercel/Netlify]
-        C[Backend<br/>Node.js] --> D[Cloud Hosting<br/>Render/Railway]
-        D --> E[MongoDB Atlas]
-        D --> F[File Storage<br/>Cloud Storage]
-    end
-    
-    B -->|API Calls| D
-    C --> E
-    C --> F
-```
+`POST /soil` → Multer saves images under `backend/uploads/` → paths stored on `SoilBooking.soilPhotos` → served via `express.static` on `/uploads`.
 
-## Data Flow Architecture
+## Deployment (reference)
 
-```
-User Input → Frontend Validation → API Request → 
-Backend Middleware → Controller → Database → 
-Response → Frontend Update → User Feedback
-```
+Frontend: `pnpm build` / `npm run build` → static assets. Backend: Node process with `MONGO_URI` (or `MONGODB_URI` per `loadEnv.js`). MongoDB Atlas compatible.
 
-## File Upload Architecture
+## Scalability notes
 
-```
-Client → Multer Middleware → File Validation → 
-Save to uploads/ → Store Path in Database → 
-Serve via Static Route /uploads
-```
-
-## Scalability Considerations
-
-- **Horizontal Scaling**: Stateless API allows multiple instances
-- **Database**: MongoDB supports sharding and replication
-- **Caching**: Can add Redis for session/token caching
-- **CDN**: Static assets can be served via CDN
-- **Load Balancing**: Multiple backend instances behind load balancer
+- API is stateless (JWT), suitable for horizontal scaling behind a load balancer.
+- File storage can move to S3-compatible storage with URL fields instead of local paths.
+- Optional future layers: Redis cache, rate limiting on `/contact` and `/auth`.

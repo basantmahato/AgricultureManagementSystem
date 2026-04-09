@@ -1,12 +1,12 @@
 # agroFarm Documentation
 
-This directory contains system documentation for the agroFarm platform.
+This directory contains system documentation for the agroFarm platform. The technical docs (**System_Architecture**, **ER_Diagram**, **DFD**) are maintained to match the current codebase (Express API on port **3000** by default, Vite frontend, MongoDB models including **Blog** and **ContactInquiry**, admin **Leads** from `/admin/contacts`, user dashboard **soil** and **orders** sections).
 
 ## Files
 
-1. **DFD.md** - Data Flow Diagram showing data flows between processes, data stores, and external entities
-2. **ER_Diagram.md** - Entity Relationship Diagram showing database schema and relationships
-3. **System_Architecture.md** - System Architecture document showing overall system design and technology stack
+1. **DFD.md** — Data flow (users, admin, public contact/blog, file uploads, weather from client)
+2. **ER_Diagram.md** — Entities: User, Task, SoilBooking, Equipment, Order (embedded items), Blog, ContactInquiry
+3. **System_Architecture.md** — Stack, route map, auth, and deployment notes
 
 ## Converting to PDF
 
