@@ -4,8 +4,11 @@ import { seedEquipment } from "./seedEquipment.js";
 import { seedBlog } from "./seedBlog.js";
 import { seedAdmin } from "./seedAdmin.js";
 
+/** --force / --fresh / SEED_FORCE=1: replace equipment & blogs; reset admin password/role when needed */
 const force =
-  process.argv.includes("--force") || process.env.SEED_FORCE === "1";
+  process.argv.includes("--force") ||
+  process.argv.includes("--fresh") ||
+  process.env.SEED_FORCE === "1";
 
 async function main() {
   const mongoUri = getMongoUri();
@@ -17,7 +20,7 @@ async function main() {
   await mongoose.connect(mongoUri);
   console.log(
     "Connected. Seeding admin, equipment, and blogs" +
-      (force ? " (force: data reset where applicable)" : "") +
+      (force ? " (force: clearing equipment/blogs; admin updated if exists)" : "") +
       "…"
   );
 
